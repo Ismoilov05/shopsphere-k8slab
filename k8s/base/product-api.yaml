@@ -1,3 +1,4 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,23 +16,54 @@ spec:
     spec:
       containers:
         - name: product-api
-          image: shopsphere-product-api:1.0.0
+          image: shopsphere-product-api:1.1.0
           imagePullPolicy: Never
           ports:
             - name: http
               containerPort: 3000
+
+          env:
+            - name: PORT
+              value: "3000"
+
+            - name: DB_HOST
+              value: postgres
+
+            - name: DB_PORT
+              value: "5432"
+
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_DB
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+
           readinessProbe:
             httpGet:
               path: /health
               port: http
             initialDelaySeconds: 3
             periodSeconds: 5
+
           livenessProbe:
             httpGet:
               path: /health
               port: http
             initialDelaySeconds: 10
             periodSeconds: 10
+
           resources:
             requests:
               cpu: 100m
